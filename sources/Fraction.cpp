@@ -1,32 +1,40 @@
 #include "Fraction.hpp"
 
-Fraction::Fraction(int n1, int n2) // -10/3
+const int max_limit = std::numeric_limits<int>::max();
+const int min_limit = std::numeric_limits<int>::min();
+
+Fraction::Fraction() : num1(0), num2(1) {}
+Fraction::Fraction(int number1, int number2) // -10/3
 {
-    if(n2 == 0)
+    if(number2 == 0)
         throw std::invalid_argument("Denominator cannot be zero");
-    int tmp = gcd(n1,n2);
-    if(n2 < 0)
+    int tmp = gcd(number1,number2);
+    num1 = number1/tmp;
+    num2 = number2/tmp;
+    if((num2 <0) && (num1 >= 0))
     {
-        n2*=-1;
-        n1*=-1;
+        num1 *=(-1);
+        num2 *=(-1);
     }
-    num1 = n1/tmp;
-    num2 = n2/tmp;
 
 }
 
-// Fraction::Fraction (Fraction f)
-// {
-//    num1 = f.num1;
-//    num2 = f.num2;
-// }
 Fraction::Fraction(float d)
 {
     num1 = floatToFraction(d).num1;
     num2 = floatToFraction(d).num2;
 }
 
-int Fraction::gcd(int a, int b) {
+
+void check_overflow(long num1 , long num2){
+    if(num1 > max_limit || num2 > max_limit){
+        throw std::overflow_error("Number passes the limit");
+    }
+    if(num1 < min_limit || num2 < min_limit){
+        throw std::overflow_error("Number passes the limit");
+    }
+} 
+int Fraction::gcd(int a, int b) const {
     if (b == 0) {
         return a;
     } else {
@@ -35,81 +43,96 @@ int Fraction::gcd(int a, int b) {
 }
 
 Fraction floatToFraction(float n) {
-     int i = 1;
-    while (n != (int)n && i!= 1000)
-    {
-        i *= 10;
-        n *= 10;
-    }
+    int i = 1000;
+    n = 1000*n;
     Fraction tmp(n,i);
     return tmp;
 }
-Fraction const Fraction::operator+ (Fraction f)
+Fraction Fraction::operator+ (const Fraction& frac) const
 {
-    int tmp1 = num1 * f.num2 + num2 * f.num1;
-    int tmp2 = num2 * f.num2;
-    int tmp = gcd (tmp1, tmp2);
+     
 
+    long tmp1 = static_cast<long>(num1) * frac.num2 + num2 * frac.num1;
+    long tmp2 = static_cast<long>(num2) * frac.num2;
+    check_overflow(tmp1 , tmp2);
+    int tmp = gcd (tmp1, tmp2);
     Fraction f2(tmp1/tmp, tmp2/tmp );
+
     return f2;
 }
 
-Fraction const operator+ (float d,Fraction f)
+Fraction operator+ (float d,Fraction f)
 {
     return f + d;
 }
 
-Fraction const Fraction::operator+ (float n)
+Fraction Fraction::operator+ (float n)
 {
     return *this + floatToFraction(n);
 }
 
-Fraction const Fraction::operator- (Fraction f)
+Fraction Fraction::operator- (const Fraction& frac) const
 {
-    Fraction tmp(-f.num1,f.num2);
-    return *this + tmp;
+    long tmp1 = static_cast<long>(num1) * frac.num2 - num2 * frac.num1;
+    long tmp2 = static_cast<long>(num2) * frac.num2;
+    check_overflow(tmp1 , tmp2);
+    Fraction tmp(tmp1,tmp2);
+    return tmp;
 }
 
-Fraction const operator- (float d,Fraction f)
+Fraction operator- (float d, const Fraction f)
 {
     return floatToFraction(d) - f;
      
 }
 
-Fraction const Fraction::operator- (float n)
+Fraction Fraction::operator- (float d)
 {
-    return *this + -1*n;
+    return *this - floatToFraction(d);
 }
 
-Fraction const Fraction::operator* (Fraction f)
+Fraction Fraction::operator* (const Fraction& frac) const
 {
-   Fraction tmp(num1*f.num1 , num2*f.num2);
+
+   long tmp1 = static_cast<long>(num1)*frac.num1;
+   long tmp2 = static_cast<long>(num2)*frac.num2;
+   check_overflow(tmp1 , tmp2);
+   Fraction tmp(num1*frac.num1 , num2*frac.num2);
    return tmp;
 }
-Fraction const operator* (float d,Fraction f)
+Fraction operator* (float d,Fraction f)
 {
     return f * d;
      
 }
-Fraction const Fraction::operator* (float n)
+Fraction Fraction::operator* (float n)
 {
     return *this * floatToFraction(n);
 }
 
-Fraction const Fraction::operator/ (Fraction f)
+Fraction Fraction::operator/ (const Fraction& frac) const
 {
-    Fraction tmp(f.num2,f.num1);
+    if(frac.num1 == 0)
+        throw std::runtime_error("Denominator cannot be zero");
+    Fraction tmp(frac.num2,frac.num1);
+    
+    if (num1 > 0 && frac.num1 > max_limit - num1)
+        {
+            throw std::overflow_error("Number passes the limit");
+        }
+        if (num2 > 0 && num2 - 1 > max_limit - frac.num2)
+        {
+            throw std::overflow_error("Number passes the limit");
+        }
     return *this * tmp;
 }
 
-Fraction const operator/ (float d,Fraction f)
+Fraction operator/ (float d,Fraction f)
 {
-    Fraction a((f/d).num2, (f/d).num1);
-    return a; 
-
+    return floatToFraction(d)/f;
 }
 
-Fraction const Fraction::operator/ (float d)
+Fraction Fraction::operator/ (float d)
 {
     return *this / floatToFraction(d);
 }
@@ -121,7 +144,6 @@ Fraction Fraction::operator++ (int n)
     Fraction tmp(n1,n2);
     num1 = (*this + 1).num1;
     num2 = (*this).num2;
-  //  printf(" num1 = %d, num2 = %d", num1, num2);
     return tmp;
 }
 
@@ -140,126 +162,120 @@ Fraction Fraction::operator-- (int n)
     Fraction tmp(n1,n2);
     num1 = (*this - 1).num1;
     num2 = (*this).num2;
-  //  printf(" num1 = %d, num2 = %d", num1, num2);
     return tmp;
 }
 
 Fraction Fraction::operator-- ()
 {
-    //Fraction tmp()
     num1 = (*this - 1).num1;
- //   printf(" num1 = %d, num2 = %d", num1, num2);
+
     num2 = (*this).num2;
-  //  printf(" num1 = %d, num2 = %d", num1, num2);
     return *this;
 }
 
-std::ostream& operator<<(std::ostream& os, const Fraction& f) {
-    os << " " << f.num1 << "/" << f.num2;
-    return os;
-}
 
-// std::ostringstream& operator<<(std::ostringstream& os, const Fraction& f) {
-//     os << f.num1 << "/" << f.num2;
-//     return os;
-// }
+  std::ostream &operator<<(std::ostream &output, const Fraction &frac)
+    {
 
-std::istream& operator>>(std::istream& input, Fraction& c) {
-    int n, d;
-    char sep;
-    input >> n >> sep >> d;
-    if (d == 0) {
-        throw std::invalid_argument("Denominator cannot be zero");
+        if (frac.num2 < 0)
+        { 
+            output << -1 * frac.num1 << "/" << -1 * frac.num2;
+        }
+        else
+        {
+            output << frac.num1 << "/" << frac.num2;
+        }
+        return output;
     }
-   //if(sep != " ")
-    c = Fraction(n, d);
-    return input;
+    std::istream &operator>>(std::istream &input, Fraction &frac)
+    {
+        if (!(input >> frac.num1 >> frac.num2))
+        {
+            throw std::runtime_error("Invalid input");
+        }
+        else if (frac.num2 == 0)
+        {
+            throw std::runtime_error("invalid input");
+        }
+
+        return input;
+    }
+
+
+
+
+bool Fraction::operator==(const Fraction& f) const {
+
+    return ((num1 == f.num1) && (num2 == f.num2)) || ((num1 == 0) && (f.num1==0)) || ((num1 == -f.num1) && (num2 == -f.num2)) ;
 }
 
-
-
-
-
-void const Fraction::operator= (Fraction f)
+bool operator== (float d, Fraction f)
 {
-    num1 = f.num1;
-    num2 = f.num2;
-
-}
-bool const Fraction::operator== (Fraction f)
-{
-    if((*this - f).num1 == 0)
-        return true;
-    return false;
+    return floatToFraction(d) == f;
 }
 
-bool const operator== (float d, Fraction f)
-{
-    return f == d;
-}
-
-bool const Fraction::operator== (float d)
+bool Fraction::operator== (float d)
 {
     return *this == floatToFraction(d);
 }
 
-bool const Fraction::operator>= (Fraction f)
+bool Fraction::operator>= (const Fraction& f) const
 {
     if((*this - f).num1 < 0 || (*this - f).num2 < 0)
         return false;
     return true;
 }
-bool const operator>= (float d, Fraction f)
+bool operator>= (float d, Fraction f)
 {
     return f <= d;
 }
 
-bool const Fraction::operator>= (float d)
+bool Fraction::operator>= (float d)
 {
     return *this >= floatToFraction(d);
 }
 
-bool const Fraction::operator<= (Fraction f)
+bool Fraction::operator<= (const Fraction& f) const
 {
     return f >= *this;
 }
-bool const operator<= (float d, Fraction f)
+bool operator<= (float d, Fraction f)
 {
     return f >= d;
 }
 
-bool const Fraction::operator<= (float d)
+bool Fraction::operator<= (float d)
 {
     return floatToFraction(d) >= *this ;
 }
 
-bool const Fraction::operator> (Fraction f)
+bool Fraction::operator> (const Fraction& f) const
 {
     if((*this - f).num1 <= 0 || (*this - f).num2 <= 0)
         return false;
     return true;
 }
-bool const operator> (float d, Fraction f)
+bool operator> (float d, Fraction f)
 {
     return f < d;
 }
 
 
-bool const Fraction::operator> (float d)
+bool Fraction::operator> (float d)
 {
     return *this > floatToFraction(d);
 }
 
-bool const Fraction::operator< (Fraction f)
+bool Fraction::operator< (const Fraction& f) const
 {
     return f > *this;
 }
-bool const operator< (float d, Fraction f)
+bool operator< (float d, Fraction f)
 {
     return f > d;
 }
 
-bool const Fraction::operator< (float d)
+bool Fraction::operator< (float d)
 {
     return floatToFraction(d) > *this ;
 }

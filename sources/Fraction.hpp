@@ -1,68 +1,63 @@
 namespace ariel{};
 #include <iostream>
 #include <sstream>
-
+#include <limits>
 class Fraction {
   public:
     int num1,num2;
     Fraction();
-    Fraction(int n1, int n2);
+    Fraction(int, int);
     Fraction(float);
-    int getNumerator() {return num1;};
-    int getDenominator() {return num2;};
-    Fraction const operator+ (Fraction);
-    Fraction const operator+ (float);
+    
+    int getNumerator() const {return num1;};
+    int getDenominator() const {return num2;};
+    Fraction operator+ (const Fraction&) const;
+    Fraction operator+ (float);
    
+    Fraction operator- (const Fraction&) const;
+    Fraction operator- (float); 
 
-    Fraction const operator- (Fraction);
-    Fraction const operator- (float); 
+    Fraction operator/ (const Fraction&) const;
+    Fraction operator/ (float);
 
-    Fraction const operator/ (Fraction);
-    Fraction const operator/ (float);
-
-    Fraction const operator* (Fraction);
-    Fraction const operator* (float);
-//    double operator* (Fraction);
-//    Fraction operator*(const double& left, const Fraction& right)
-
+    Fraction operator* (const Fraction&) const;
+    Fraction operator* (float);
 
     Fraction operator++ (int);
     Fraction operator++ ();
     Fraction operator-- (int);
     Fraction operator-- ();
 
-    bool const operator< (float);
-    bool const operator< (Fraction);
+    bool operator< (float);
+    bool operator< (const Fraction&) const;
 
-    bool const operator> (float);
-    bool const operator> (Fraction);
+    bool operator> (float);
+    bool operator> (const Fraction&) const;
 
-    void const operator= (Fraction);
-    bool const operator== (float);
-    bool const operator== (Fraction);
+    bool operator== (float);
+    bool operator== (const Fraction&) const;
 
-    bool const operator>= (float);
-    bool const operator>= (Fraction);
+    bool operator>= (float);
+    bool operator>= (const Fraction&) const;
     
-    bool const operator<= (float);
-    bool const operator<= (Fraction);
-    int gcd(int a, int b);
+    bool operator<= (float);
+    bool operator<= (const Fraction&) const;
+    int gcd(int, int) const;
 
-  //  friend std::ostringstream& operator<<(std::ostringstream& os, const Fraction& f);
-    friend std::ostream& operator<< (std::ostream& output, const Fraction& c);
-    friend std::istream& operator>> (std::istream& input , Fraction& c);
+    friend std::ostream& operator<< (std::ostream&, const Fraction&);
+    friend std::istream& operator>> (std::istream&, Fraction&);
 };
 
 Fraction floatToFraction(float);
-  Fraction const operator* (float, Fraction);
- Fraction const operator/ (float, Fraction);
- Fraction const operator+ (float, Fraction);
- Fraction const operator- (float, Fraction);
+Fraction  operator* (float, Fraction);
+Fraction  operator/ (float, Fraction);
+Fraction operator+ (float, Fraction);
+Fraction  operator- (float, Fraction);
 
- bool const operator== (float, Fraction);
- bool const operator< (float, Fraction);
- bool const operator> (float, Fraction);
- bool const operator>= (float, Fraction);
- bool const operator<= (float, Fraction);
+bool operator== (float, Fraction);
+bool operator< (float, Fraction);
+bool operator> (float, Fraction);
+bool operator>= (float, Fraction);
+bool operator<= (float, Fraction);
  
 
