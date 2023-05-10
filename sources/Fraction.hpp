@@ -2,6 +2,7 @@ namespace ariel{};
 #include <iostream>
 #include <sstream>
 #include <limits>
+#include <stdexcept>
 class Fraction {
   public:
     int num1,num2;
